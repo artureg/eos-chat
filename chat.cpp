@@ -31,23 +31,26 @@ public:
 	}
 
 	//@abi action
-	void rmmessage (name sender, uint64_t id) {
+	void rmmessage (account_name sender, uint64_t id) {
 		require_auth(sender);
 
 		auto message_iter = messages.find(id);
 		eosio_assert(message_iter != messages.end(), "Message ID doesn't exist");
 
+		bool check = ( message_iter->owner == sender ) || ( message_iter->recipient == sender );
+		eosio_assert( check, "It isn't your message" );
 
+		messages.erase(message_iter);
 	}
 
 private:
 
 	//@abi table message i64
 	struct message {
-		uint64_t	id;
-		account_name 		owner;
-		account_name 		recipient;
-		string		sms;
+		uint64_t		id;
+		account_name 	owner;
+		account_name 	recipient;
+		string			sms;
 
 		uint64_t primary_key() const {return id;}
 
@@ -56,11 +59,6 @@ private:
 
 	multi_index<N(message), message> messages;
 
-	/*struct channel {
-		uint64_t	id;
-		name 		alice;
-		name 		bob;
-	};*/
 };
 
-EOSIO_ABI( chat, (addmessage) )
+EOSIO_ABI( chat, (addmessage)(rmmessage) )
