@@ -26,6 +26,7 @@ public:
 			message.owner = sender;
 			message.recipient = recipient;
 			message.sms = sms;
+			message.time = eosio::time_point(eosio::seconds(now()));
 		});
 		print("Add message");
 	}
@@ -51,10 +52,11 @@ private:
 		account_name 	owner;
 		account_name 	recipient;
 		string			sms;
+        eosio::time_point_sec time;
 
-		uint64_t primary_key() const {return id;}
+        uint64_t primary_key() const {return id;}
 
-		EOSLIB_SERIALIZE( message, (id)(owner)(recipient)(sms) )
+		EOSLIB_SERIALIZE( message, (id)(owner)(recipient)(sms)(time) )
 	};
 
 	multi_index<N(message), message> messages;
