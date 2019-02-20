@@ -1,19 +1,19 @@
 #include <eosiolib/eosio.hpp>
+#include <eosiolib/time.hpp>
 
 using namespace eosio;
 using namespace std;
 
-class chat : public contract {
-
-	using contract::contract;
+class [[eosio::contract("chat")]] chat : public eosio::contract {
 
 public:
 
-	chat(account_name self):
-		contract(self),
-		messages(_self, _self) {}
+	chat(eosio::name receiver, eosio::name code, eosio::datastream<const char*> ds):
+		contract(receiver, code, ds),
+		messages(_self, _self.value) {}
 
 	//@abi action
+	[[eosio::action("addmessage")]] 
 	void addmessage (eosio::name sender, eosio::name recipient, string sms) {
 		require_auth(sender);
 		eosio_assert( is_account(recipient), "to account doesn't exist");
@@ -21,7 +21,7 @@ public:
 		require_recipient(sender);
 		require_recipient(recipient);
 
-		messages.emplace(_self, [&]( auto& message) {
+		messages.emplace(sender, [&]( auto& message) {
 			message.id = messages.available_primary_key();
 			message.owner = sender;
 			message.recipient = recipient;
@@ -32,6 +32,7 @@ public:
 	}
 
 	//@abi action
+	[[eosio::action("rmmessage")]] 
 	void rmmessage (eosio::name sender, uint64_t id) {
 		require_auth(sender);
 
@@ -47,7 +48,7 @@ public:
 private:
 
 	//@abi table message i64
-	struct message {
+	struct [[eosio::table]] message {
 		uint64_t		id;
         eosio::name 	owner;
         eosio::name 	recipient;
@@ -59,8 +60,11 @@ private:
 		EOSLIB_SERIALIZE( message, (id)(owner)(recipient)(sms)(time) )
 	};
 
-	multi_index<N(message), message> messages;
+	typedef eosio::multi_index<"messages"_n, message> Messages;
+
+	Messages messages;
 
 };
 
-EOSIO_ABI( chat, (addmessage)(rmmessage) )
+EOSIO_DISPATCH(chat, (addmessage)(rmmessage))
+
