@@ -14,7 +14,7 @@ public:
 		messages(_self, _self) {}
 
 	//@abi action
-	void addmessage (account_name sender, account_name recipient, string sms) {
+	void addmessage (eosio::name sender, eosio::name recipient, string sms) {
 		require_auth(sender);
 		eosio_assert( is_account(recipient), "to account doesn't exist");
 
@@ -32,7 +32,7 @@ public:
 	}
 
 	//@abi action
-	void rmmessage (account_name sender, uint64_t id) {
+	void rmmessage (eosio::name sender, uint64_t id) {
 		require_auth(sender);
 
 		auto message_iter = messages.find(id);
@@ -49,8 +49,8 @@ private:
 	//@abi table message i64
 	struct message {
 		uint64_t		id;
-		account_name 	owner;
-		account_name 	recipient;
+        eosio::name 	owner;
+        eosio::name 	recipient;
 		string			sms;
         eosio::time_point_sec time;
 
