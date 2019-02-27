@@ -28,6 +28,17 @@ public:
 			message.sms = sms;
 			message.time = eosio::time_point(eosio::seconds(now()));
 		});
+        
+
+        uint64_t count = 0;
+        for (auto itr = messages.begin(); itr != messages.end(); ++itr) {
+            ++count;
+        }
+
+        if (count > 100) {
+            messages.erase(messages.begin());
+        }
+
 		print("Add message");
 	}
 
@@ -63,6 +74,7 @@ private:
 	typedef eosio::multi_index<"messages"_n, message> Messages;
 
 	Messages messages;
+	
 
 };
 
